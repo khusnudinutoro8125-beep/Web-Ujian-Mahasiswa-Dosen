@@ -31,13 +31,13 @@
                     <div class="mb-4"><label class="block text-sm font-semibold mb-1">NIM</label><input type="text" id="mhs-nim" required class="w-full border rounded p-3 focus:outline-blue-500"></div>
                     <div class="mb-4"><label class="block text-sm font-semibold mb-1">Nama Lengkap</label><input type="text" id="mhs-nama" required class="w-full border rounded p-3 focus:outline-blue-500"></div>
                     <div class="mb-4"><label class="block text-sm font-semibold mb-1">Password</label><input type="password" id="mhs-pass" required class="w-full border rounded p-3 focus:outline-blue-500"></div>
-                    <div class="mb-6 flex items-center"><input type="checkbox" id="mhs-new" class="mr-2"><label for="mhs-new" class="text-sm">Ini login pertama (Buat password baru)</label></div>
+                    <div class="mb-6 flex items-center"><input type="checkbox" id="mhs-new" class="mr-2"><label for="mhs-new" class="text-sm">Ini login pertama</label></div>
                     <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded hover:bg-blue-700">Masuk / Daftar</button>
                 </form>
                 <form id="form-dsn" class="hidden" onsubmit="handleLoginDsn(event)">
                     <div class="mb-4"><label class="block text-sm font-semibold mb-1">Username Dosen</label><input type="text" id="dsn-user" required class="w-full border rounded p-3 focus:outline-blue-500"></div>
                     <div class="mb-6"><label class="block text-sm font-semibold mb-1">Password</label><input type="password" id="dsn-pass" required class="w-full border rounded p-3 focus:outline-blue-500"></div>
-                    <button type="submit" class="w-full bg-gray-800 text-white font-bold py-3 rounded hover:bg-gray-900">Masuk sebagai Dosen</button>
+                    <button type="submit" class="w-full bg-gray-800 text-white font-bold py-3 rounded hover:bg-gray-900">Masuk Dosen</button>
                 </form>
             </div>
 
@@ -45,10 +45,7 @@
                 <h2 class="text-2xl font-bold mb-6 border-b pb-2">Daftar Ujian Tersedia</h2>
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-1">Pilih Ujian</label>
-                    <select id="select-id-set" class="w-full border rounded p-3 h-12 focus:outline-blue-500 mb-4 bg-gray-50 font-semibold text-lg cursor-pointer">
-                        <option value="">Memuat data ujian...</option>
-                    </select>
-                    
+                    <select id="select-id-set" class="w-full border rounded p-3 h-12 focus:outline-blue-500 mb-4 bg-gray-50 font-semibold text-lg cursor-pointer"><option value="">Memuat data...</option></select>
                     <label class="block text-sm font-semibold mb-1">PIN Ujian (Dari Dosen)</label>
                     <input type="text" id="input-pin" class="w-full border rounded p-3 focus:outline-blue-500 mb-6 font-bold text-center tracking-widest text-xl" placeholder="****">
                     <button onclick="mulaiUjian()" class="w-full bg-green-600 text-white px-4 py-3 rounded hover:bg-green-700 font-bold text-lg shadow">Mulai Ujian</button>
@@ -73,7 +70,8 @@
 
             <div id="dsn-dashboard-view" class="hidden w-full max-w-7xl bg-white p-6 rounded-lg shadow-lg">
                 <div class="flex gap-4 mb-6 border-b">
-                    <button id="tab-dsn-monitor" onclick="switchDsnTab('monitor')" class="py-2 px-4 border-b-2 border-blue-600 font-bold text-blue-600">Monitoring & Nilai</button>
+                    <button id="tab-dsn-monitor" onclick="switchDsnTab('monitor')" class="py-2 px-4 border-b-2 border-blue-600 font-bold text-blue-600">Monitoring</button>
+                    <button id="tab-dsn-rekap" onclick="switchDsnTab('rekap')" class="py-2 px-4 text-gray-500 font-semibold hover:text-blue-500">Rekap Nilai</button>
                     <button id="tab-dsn-manage" onclick="switchDsnTab('manage')" class="py-2 px-4 text-gray-500 font-semibold hover:text-blue-500">Pengaturan Ujian (PIN)</button>
                 </div>
                 
@@ -91,6 +89,16 @@
                     </div>
                 </div>
 
+                <div id="dsn-rekap-section" class="hidden">
+                    <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Rekapitulasi Nilai Akhir</h2><button onclick="renderRekapNilai()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-bold shadow">Muat Ulang Matriks</button></div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead><tr id="table-head-rekap-tr" class="bg-gray-800 text-white"></tr></thead>
+                            <tbody id="table-body-rekap" class="text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <div id="dsn-manage-section" class="hidden">
                     <h2 class="text-xl font-bold mb-4">Aktivasi & Pengaturan PIN Ujian</h2>
                     <table class="w-full text-left border-collapse">
@@ -104,15 +112,18 @@
     </div>
 
     <div id="modal-koreksi" class="fixed inset-0 modal-bg flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] flex flex-col">
             <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-lg">
-                <h3 class="text-xl font-bold">Koreksi Jawaban</h3><button onclick="tutupKoreksi()" class="text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
+                <h3 class="text-xl font-bold">Koreksi & Penilaian Per Soal</h3><button onclick="tutupKoreksi()" class="text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
             </div>
             <div class="p-4 border-b flex items-center justify-between bg-blue-50">
                 <div id="koreksi-info-mhs" class="font-semibold text-blue-900"></div>
-                <div class="flex items-center gap-2">
-                    <label class="font-bold text-sm">Nilai Akhir:</label><input type="number" id="input-nilai-baru" class="w-20 border border-gray-400 rounded p-1 text-center font-bold text-lg">
-                    <button onclick="simpanNilaiBaru()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded font-bold shadow">Simpan</button>
+                <div class="flex items-center gap-4">
+                    <div class="text-right">
+                        <span class="block text-xs font-semibold text-gray-500">TOTAL NILAI KESELURUHAN</span>
+                        <input type="number" id="input-nilai-baru" class="w-24 border border-gray-400 rounded p-1 text-center font-bold text-2xl text-blue-700 bg-gray-100 cursor-not-allowed" readonly>
+                    </div>
+                    <button onclick="simpanNilaiBaru()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-bold shadow text-lg">Simpan Keseluruhan</button>
                 </div>
             </div>
             <div id="koreksi-konten" class="p-4 overflow-y-auto flex-grow space-y-4"></div>
@@ -120,8 +131,7 @@
     </div>
 
     <script>
-        // ISI URL GAS ANDA DI BAWAH INI
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzje9JUcWFNfv1pxa04asMihgfcZ1CJy8hxSFun53t2hZ0HdGpDorsHI9WPc8UJR9cq/exec'; 
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyJAzX-f6dKIeWc7_0U9VhCYO2UynoV0FfpmotvZe5DarHe-e1YeHL6ayZZqhCKUTC7/exec'; 
 
         let currentUser = null; let currentRole = null; let bankSoal = []; let jawabanMahasiswa = {};
         let currentSoalIndex = 0; let timerInterval = null; let currentIdSet = ''; let waktuSisa = 0;
@@ -135,9 +145,15 @@
         }
         function switchDsnTab(tab) {
             document.getElementById('tab-dsn-monitor').className = tab === 'monitor' ? "py-2 px-4 border-b-2 border-blue-600 font-bold text-blue-600" : "py-2 px-4 text-gray-500 font-semibold hover:text-blue-500";
+            document.getElementById('tab-dsn-rekap').className = tab === 'rekap' ? "py-2 px-4 border-b-2 border-blue-600 font-bold text-blue-600" : "py-2 px-4 text-gray-500 font-semibold hover:text-blue-500";
             document.getElementById('tab-dsn-manage').className = tab === 'manage' ? "py-2 px-4 border-b-2 border-blue-600 font-bold text-blue-600" : "py-2 px-4 text-gray-500 font-semibold hover:text-blue-500";
-            document.getElementById('dsn-monitor-section').classList.toggle('hidden', tab !== 'monitor'); document.getElementById('dsn-manage-section').classList.toggle('hidden', tab !== 'manage');
+            
+            document.getElementById('dsn-monitor-section').classList.toggle('hidden', tab !== 'monitor'); 
+            document.getElementById('dsn-rekap-section').classList.toggle('hidden', tab !== 'rekap'); 
+            document.getElementById('dsn-manage-section').classList.toggle('hidden', tab !== 'manage');
+            
             if(tab === 'manage') loadManajemenUjian();
+            if(tab === 'rekap') renderRekapNilai();
         }
         function logout() { currentUser = null; currentRole = null; clearInterval(timerInterval); document.getElementById('user-info').classList.add('hidden'); showView('login-view'); }
         
@@ -155,23 +171,17 @@
         }
 
         async function loadActiveExamsForMhs() {
-            const sel = document.getElementById('select-id-set');
-            sel.innerHTML = '<option value="">Sedang mencari ujian aktif...</option>';
-            
+            const sel = document.getElementById('select-id-set'); sel.innerHTML = '<option value="">Sedang mencari ujian aktif...</option>';
             const res = await fetchAPI({ action: 'get_active_exams' });
-            sel.innerHTML = ''; // Bersihkan opsi loading
-            
-            if (res && res.status === 'success' && res.data.length > 0) {
-                res.data.forEach(id => sel.innerHTML += `<option value="${id}">${id}</option>`);
-            } else { 
-                sel.innerHTML = '<option value="" disabled selected>Belum ada ujian yang diaktifkan Dosen</option>'; 
-            }
+            sel.innerHTML = '';
+            if (res && res.status === 'success' && res.data.length > 0) res.data.forEach(id => sel.innerHTML += `<option value="${id}">${id}</option>`);
+            else sel.innerHTML = '<option value="" disabled selected>Belum ada ujian yang diaktifkan Dosen</option>'; 
         }
 
         async function mulaiUjian() {
             currentIdSet = document.getElementById('select-id-set').value;
             const pin = document.getElementById('input-pin').value;
-            if (!currentIdSet) return Swal.fire('Error', 'Tidak ada ujian yang dipilih. Dosen belum mengaktifkan ujian.', 'warning');
+            if (!currentIdSet) return Swal.fire('Error', 'Tidak ada ujian yang dipilih.', 'warning');
             if (!pin) return Swal.fire('Error', 'Masukkan PIN Ujian', 'warning');
             
             const res = await fetchAPI({ action: 'get_soal_with_pin', id_set: currentIdSet, pin: pin });
@@ -191,12 +201,14 @@
                 btn.onclick = () => { currentSoalIndex = i; renderSoal(); renderNavSoal(); }; nav.appendChild(btn);
             });
         }
+        
         function renderSoal() {
             const container = document.getElementById('soal-container'); const soal = bankSoal[currentSoalIndex];
             let html = `<h3 class="text-lg font-bold mb-4">Soal No. ${currentSoalIndex + 1}</h3><p class="mb-4">${soal.pertanyaan}</p>`;
             if (soal.gambar) html += `<img src="${soal.gambar}" class="max-w-full mb-4 border rounded shadow-sm">`;
             if (soal.tipe.toLowerCase() === 'pg') {
-                ['A', 'B', 'C', 'D'].forEach(opsi => {
+                // Iterasi ditambahkan E
+                ['A', 'B', 'C', 'D', 'E'].forEach(opsi => {
                     if(soal.opsi[opsi]) {
                         const isChecked = jawabanMahasiswa[currentSoalIndex] === opsi ? 'checked' : '';
                         html += `<label class="block mb-2 p-3 border rounded cursor-pointer hover:bg-gray-50 ${isChecked ? 'bg-blue-50 border-blue-500' : ''}"><input type="radio" name="opsi" value="${opsi}" onchange="simpanJawaban('${opsi}')" class="mr-2" ${isChecked}> ${opsi}. ${soal.opsi[opsi]}</label>`;
@@ -205,6 +217,7 @@
             } else { html += `<textarea oninput="simpanJawaban(this.value)" rows="5" class="w-full border rounded p-2 focus:outline-blue-500">${jawabanMahasiswa[currentSoalIndex] || ''}</textarea>`; }
             container.innerHTML = html;
         }
+
         function simpanJawaban(val) { jawabanMahasiswa[currentSoalIndex] = val; localStorage.setItem(`ujian_${currentUser.nim}_${currentIdSet}`, JSON.stringify(jawabanMahasiswa)); document.getElementById('save-status').innerText = `Autosave: ${new Date().toLocaleTimeString()}`; renderNavSoal(); }
         function nextSoal() { if (currentSoalIndex < bankSoal.length - 1) { currentSoalIndex++; renderSoal(); renderNavSoal(); } }
         function prevSoal() { if (currentSoalIndex > 0) { currentSoalIndex--; renderSoal(); renderNavSoal(); } }
@@ -227,7 +240,8 @@
         }
 
         async function handleLoginDsn(e) { e.preventDefault(); const res = await fetchAPI({ action: 'login_dosen', username: document.getElementById('dsn-user').value, password: document.getElementById('dsn-pass').value }); if (res && res.status === 'success') { currentRole = 'dosen'; document.getElementById('user-info').classList.remove('hidden'); document.getElementById('display-name').innerText = 'Dosen Admin'; showView('dsn-dashboard-view'); loadDashboardDosen(); loadManajemenUjian(); } else Swal.fire('Gagal', res.message, 'error'); }
-        async function loadDashboardDosen() { const res = await fetchAPI({ action: 'get_dashboard' }); if (res && res.status === 'success') { masterDataDosen = res.data; populateFilters(); renderTabelDosen(); } }
+        async function loadDashboardDosen() { const res = await fetchAPI({ action: 'get_dashboard' }); if (res && res.status === 'success') { masterDataDosen = res.data; populateFilters(); renderTabelDosen(); if(document.getElementById('dsn-rekap-section').classList.contains('hidden') === false) renderRekapNilai(); } }
+        
         function populateFilters() {
             const setU = new Set(), setK = new Set(); masterDataDosen.forEach(d => { if(d.id_set) setU.add(d.id_set); if(d.kelas) setK.add(d.kelas); });
             const eU = document.getElementById('filter-ujian'), eK = document.getElementById('filter-kelas'); const vU = eU.value, vK = eK.value;
@@ -235,30 +249,98 @@
             setU.forEach(u => eU.innerHTML += `<option value="${u}">${u}</option>`); setK.forEach(k => eK.innerHTML += `<option value="${k}">${k}</option>`);
             if([...setU].includes(vU)) eU.value = vU; if([...setK].includes(vK)) eK.value = vK;
         }
+
         function renderTabelDosen() {
             const fU = document.getElementById('filter-ujian').value, fK = document.getElementById('filter-kelas').value; const tbody = document.getElementById('table-body-dosen'); tbody.innerHTML = '';
             masterDataDosen.forEach(row => {
                 if (fU !== 'SEMUA' && row.id_set !== fU) return; if (fK !== 'SEMUA' && row.kelas !== fK) return;
-                tbody.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="p-3 border">${row.timestamp}</td><td class="p-3 border font-bold">${row.nim}</td><td class="p-3 border">${row.nama}</td><td class="p-3 border">${row.kelas}</td><td class="p-3 border text-center font-semibold text-blue-600">${row.id_set}</td><td class="p-3 border"><span class="px-2 py-1 rounded text-xs text-white ${row.status === 'Selesai' ? 'bg-green-500' : 'bg-yellow-500'}">${row.status}</span></td><td class="p-3 border text-center font-bold text-lg">${row.nilai}</td><td class="p-3 border text-center"><button onclick="bukaKoreksi('${row.nim}', '${row.nama}', '${row.id_set}', '${row.nilai}', '${encodeURIComponent(row.jawaban_detail || '{}')}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm shadow">Periksa</button></td><td class="p-3 border text-red-600 text-xs whitespace-pre-wrap">${row.pelanggaran || '-'}</td></tr>`;
+                tbody.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="p-3 border">${row.timestamp}</td><td class="p-3 border font-bold">${row.nim}</td><td class="p-3 border">${row.nama}</td><td class="p-3 border">${row.kelas}</td><td class="p-3 border text-center font-semibold text-blue-600">${row.id_set}</td><td class="p-3 border"><span class="px-2 py-1 rounded text-xs text-white ${row.status === 'Selesai' ? 'bg-green-500' : 'bg-yellow-500'}">${row.status}</span></td><td class="p-3 border text-center font-bold text-lg">${row.nilai}</td><td class="p-3 border text-center"><button onclick="bukaKoreksi('${row.nim}', '${row.nama}', '${row.id_set}', '${encodeURIComponent(row.jawaban_detail || '{}')}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm shadow">Periksa</button></td><td class="p-3 border text-red-600 text-xs whitespace-pre-wrap">${row.pelanggaran || '-'}</td></tr>`;
             });
         }
-        async function bukaKoreksi(nim, nama, id_set, nilai, jsonStr) {
-            document.getElementById('modal-koreksi').classList.remove('hidden'); document.getElementById('koreksi-info-mhs').innerText = `${nim} - ${nama} (${id_set})`; document.getElementById('input-nilai-baru').value = nilai; selectedKoreksi = { nim, id_set };
-            const konten = document.getElementById('koreksi-konten'); konten.innerHTML = '<p class="text-center mt-10">Memuat detail jawaban dari server...</p>';
+
+        function renderRekapNilai() {
+            const tbody = document.getElementById('table-body-rekap'); const thead = document.getElementById('table-head-rekap-tr');
+            const setUjian = Array.from(new Set(masterDataDosen.filter(d => d.status === 'Selesai' && d.id_set).map(d => d.id_set))).sort();
+            
+            let thHtml = '<th class="p-3 border">NIM</th><th class="p-3 border">Nama</th><th class="p-3 border">Kelas</th>';
+            setUjian.forEach(u => thHtml += `<th class="p-3 border text-center">${u}</th>`);
+            thHtml += '<th class="p-3 border text-center bg-blue-700">Rata-rata</th>'; thead.innerHTML = thHtml;
+
+            const mhsMap = {};
+            masterDataDosen.filter(d => d.status === 'Selesai').forEach(d => {
+                if (!mhsMap[d.nim]) mhsMap[d.nim] = { nama: d.nama, kelas: d.kelas, scores: {} };
+                mhsMap[d.nim].scores[d.id_set] = d.nilai;
+            });
+
+            tbody.innerHTML = '';
+            Object.keys(mhsMap).forEach(nim => {
+                const m = mhsMap[nim];
+                let rowHtml = `<td class="p-3 border font-bold">${nim}</td><td class="p-3 border">${m.nama}</td><td class="p-3 border">${m.kelas}</td>`;
+                let total = 0, count = 0;
+                setUjian.forEach(u => {
+                    const val = m.scores[u];
+                    if (val !== undefined && val !== '') { rowHtml += `<td class="p-3 border text-center font-semibold">${val}</td>`; total += parseFloat(val); count++; } 
+                    else { rowHtml += `<td class="p-3 border text-center text-gray-400">-</td>`; }
+                });
+                const rata = count > 0 ? (total/count).toFixed(1) : 0;
+                rowHtml += `<td class="p-3 border text-center font-bold text-blue-700 bg-blue-50">${rata}</td>`;
+                tbody.innerHTML += `<tr class="border-b hover:bg-gray-50">${rowHtml}</tr>`;
+            });
+        }
+
+        async function bukaKoreksi(nim, nama, id_set, jsonStr) {
+            document.getElementById('modal-koreksi').classList.remove('hidden'); 
+            document.getElementById('koreksi-info-mhs').innerText = `${nim} - ${nama} (${id_set})`; 
+            document.getElementById('input-nilai-baru').value = '0'; // Akan dihitung dari bawah
+            selectedKoreksi = { nim, id_set };
+            
+            const konten = document.getElementById('koreksi-konten'); konten.innerHTML = '<p class="text-center mt-10">Memuat detail jawaban...</p>';
             const res = await fetchAPI({ action: 'get_soal_kunci', id_set: id_set });
+            
             if (res && res.status === 'success') {
                 const jwbMhs = JSON.parse(decodeURIComponent(jsonStr)); konten.innerHTML = '';
+                const bobotDefault = 100 / res.data.length; // Rumus pembobotan dinamis
+
                 res.data.forEach((s, i) => {
                     let jwb = jwbMhs[i] || '- Kosong -', isPG = s.tipe.toLowerCase() === 'pg';
-                    let ikon = isPG ? (jwb.toString().toUpperCase() === (s.kunci || '').toString().toUpperCase() ? '<span class="text-green-600 font-bold ml-2">✓ Benar</span>' : '<span class="text-red-600 font-bold ml-2">✗ Salah</span>') : '<span class="text-blue-600 font-bold ml-2">(Esai)</span>';
-                    konten.innerHTML += `<div class="border rounded p-4 mb-4 ${isPG ? 'bg-white' : 'bg-yellow-50'} shadow-sm"><p class="font-bold mb-2">Soal ${i + 1}: ${s.pertanyaan}</p><div class="grid grid-cols-2 gap-4 text-sm"><div class="bg-gray-100 p-2 rounded border"><span class="font-semibold block mb-1">Jawaban Mahasiswa:</span><span class="${isPG ? 'font-bold text-lg' : ''}">${jwb}</span> ${ikon}</div><div class="bg-green-50 p-2 rounded border"><span class="font-semibold text-green-700 block mb-1">Kunci / Referensi Dosen:</span><span class="${isPG ? 'font-bold text-lg text-green-700' : ''}">${s.kunci || '-'}</span></div></div></div>`;
+                    let isBenar = isPG && jwb.toString().toUpperCase() === (s.kunci || '').toString().toUpperCase();
+                    let ikon = isPG ? (isBenar ? '<span class="text-green-600 font-bold ml-2">✓ Benar</span>' : '<span class="text-red-600 font-bold ml-2">✗ Salah</span>') : '<span class="text-blue-600 font-bold ml-2">(Esai)</span>';
+                    
+                    // Input skor per soal
+                    let skorAwal = isPG ? (isBenar ? bobotDefault : 0) : 0; 
+                    
+                    konten.innerHTML += `
+                    <div class="border rounded p-4 mb-4 ${isPG ? 'bg-white' : 'bg-yellow-50'} shadow-sm flex flex-col md:flex-row gap-4 items-center">
+                        <div class="flex-grow w-full">
+                            <p class="font-bold mb-2">Soal ${i + 1}: ${s.pertanyaan}</p>
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div class="bg-gray-100 p-2 rounded border"><span class="font-semibold block mb-1">Jwb Mhs:</span><span class="${isPG ? 'font-bold text-lg' : ''}">${jwb}</span> ${ikon}</div>
+                                <div class="bg-green-50 p-2 rounded border"><span class="font-semibold text-green-700 block mb-1">Kunci:</span><span class="${isPG ? 'font-bold text-lg text-green-700' : ''}">${s.kunci || '-'}</span></div>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-32 text-center bg-gray-100 p-3 rounded border">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">POIN SOAL INI</label>
+                            <input type="number" class="skor-item w-full border border-gray-400 rounded p-2 text-center font-bold text-lg focus:outline-blue-500" value="${skorAwal.toFixed(1)}" oninput="hitungTotalSkor()">
+                        </div>
+                    </div>`;
                 });
+                hitungTotalSkor(); // Kalkulasi nilai awal saat modal dibuka
             }
         }
+
+        // Fungsi menghitung total nilai dari seluruh input skor di dalam modal
+        function hitungTotalSkor() {
+            const inputs = document.querySelectorAll('.skor-item');
+            let total = 0;
+            inputs.forEach(input => { total += parseFloat(input.value || 0); });
+            // Pembulatan ke integer terdekat agar rapi saat disimpan
+            document.getElementById('input-nilai-baru').value = Math.round(total);
+        }
+
         function tutupKoreksi() { document.getElementById('modal-koreksi').classList.add('hidden'); }
         async function simpanNilaiBaru() {
             const res = await fetchAPI({ action: 'update_nilai', nim: selectedKoreksi.nim, id_set: selectedKoreksi.id_set, nilai_baru: document.getElementById('input-nilai-baru').value });
-            if (res && res.status === 'success') { Swal.fire('Sukses', 'Nilai berhasil disimpan.', 'success'); tutupKoreksi(); loadDashboardDosen(); }
+            if (res && res.status === 'success') { Swal.fire('Sukses', 'Nilai akhir tersimpan.', 'success'); tutupKoreksi(); loadDashboardDosen(); }
         }
 
         async function loadManajemenUjian() {
@@ -266,14 +348,7 @@
             if (res && res.status === 'success') {
                 const tbody = document.getElementById('table-body-manage'); tbody.innerHTML = '';
                 res.data.forEach(row => {
-                    tbody.innerHTML += `
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="p-3 border font-bold">${row.id_set}</td>
-                            <td class="p-3 border text-center"><select id="status-${row.id_set}" class="border rounded p-2 font-bold ${row.status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}"><option value="Aktif" ${row.status === 'Aktif' ? 'selected' : ''}>Aktif</option><option value="Tutup" ${row.status === 'Tutup' ? 'selected' : ''}>Tutup</option></select></td>
-                            <td class="p-3 border text-center"><input type="text" id="pin-${row.id_set}" value="${row.pin}" class="border rounded p-2 text-center w-32 font-bold tracking-widest" placeholder="PIN"></td>
-                            <td class="p-3 border text-center"><button onclick="updateExamStatus('${row.id_set}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow">Simpan</button></td>
-                        </tr>
-                    `;
+                    tbody.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="p-3 border font-bold">${row.id_set}</td><td class="p-3 border text-center"><select id="status-${row.id_set}" class="border rounded p-2 font-bold ${row.status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}"><option value="Aktif" ${row.status === 'Aktif' ? 'selected' : ''}>Aktif</option><option value="Tutup" ${row.status === 'Tutup' ? 'selected' : ''}>Tutup</option></select></td><td class="p-3 border text-center"><input type="text" id="pin-${row.id_set}" value="${row.pin}" class="border rounded p-2 text-center w-32 font-bold tracking-widest" placeholder="PIN"></td><td class="p-3 border text-center"><button onclick="updateExamStatus('${row.id_set}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow">Simpan</button></td></tr>`;
                 });
             }
         }
