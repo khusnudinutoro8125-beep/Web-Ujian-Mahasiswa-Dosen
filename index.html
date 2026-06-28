@@ -28,16 +28,16 @@
                     <button id="btn-tab-dsn" onclick="switchLoginTab('dsn')" class="w-1/2 py-2 text-gray-500 font-semibold hover:text-blue-500">Dosen</button>
                 </div>
                 <form id="form-mhs" onsubmit="handleLoginMhs(event)">
-                    <div class="mb-4"><label class="block text-sm font-semibold mb-1">NIM</label><input type="text" id="mhs-nim" required class="w-full border rounded p-2 focus:outline-blue-500"></div>
-                    <div class="mb-4"><label class="block text-sm font-semibold mb-1">Nama Lengkap</label><input type="text" id="mhs-nama" required class="w-full border rounded p-2 focus:outline-blue-500"></div>
-                    <div class="mb-4"><label class="block text-sm font-semibold mb-1">Password</label><input type="password" id="mhs-pass" required class="w-full border rounded p-2 focus:outline-blue-500"></div>
+                    <div class="mb-4"><label class="block text-sm font-semibold mb-1">NIM</label><input type="text" id="mhs-nim" required class="w-full border rounded p-3 focus:outline-blue-500"></div>
+                    <div class="mb-4"><label class="block text-sm font-semibold mb-1">Nama Lengkap</label><input type="text" id="mhs-nama" required class="w-full border rounded p-3 focus:outline-blue-500"></div>
+                    <div class="mb-4"><label class="block text-sm font-semibold mb-1">Password</label><input type="password" id="mhs-pass" required class="w-full border rounded p-3 focus:outline-blue-500"></div>
                     <div class="mb-6 flex items-center"><input type="checkbox" id="mhs-new" class="mr-2"><label for="mhs-new" class="text-sm">Ini login pertama (Buat password baru)</label></div>
-                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700">Masuk / Daftar</button>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded hover:bg-blue-700">Masuk / Daftar</button>
                 </form>
                 <form id="form-dsn" class="hidden" onsubmit="handleLoginDsn(event)">
-                    <div class="mb-4"><label class="block text-sm font-semibold mb-1">Username Dosen</label><input type="text" id="dsn-user" required class="w-full border rounded p-2 focus:outline-blue-500"></div>
-                    <div class="mb-6"><label class="block text-sm font-semibold mb-1">Password</label><input type="password" id="dsn-pass" required class="w-full border rounded p-2 focus:outline-blue-500"></div>
-                    <button type="submit" class="w-full bg-gray-800 text-white font-bold py-2 rounded hover:bg-gray-900">Masuk sebagai Dosen</button>
+                    <div class="mb-4"><label class="block text-sm font-semibold mb-1">Username Dosen</label><input type="text" id="dsn-user" required class="w-full border rounded p-3 focus:outline-blue-500"></div>
+                    <div class="mb-6"><label class="block text-sm font-semibold mb-1">Password</label><input type="password" id="dsn-pass" required class="w-full border rounded p-3 focus:outline-blue-500"></div>
+                    <button type="submit" class="w-full bg-gray-800 text-white font-bold py-3 rounded hover:bg-gray-900">Masuk sebagai Dosen</button>
                 </form>
             </div>
 
@@ -45,9 +45,12 @@
                 <h2 class="text-2xl font-bold mb-6 border-b pb-2">Daftar Ujian Tersedia</h2>
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-1">Pilih Ujian</label>
-                    <select id="select-id-set" class="w-full border rounded p-2 focus:outline-blue-500 mb-4 bg-gray-50 font-semibold"></select>
+                    <select id="select-id-set" class="w-full border rounded p-3 h-12 focus:outline-blue-500 mb-4 bg-gray-50 font-semibold text-lg cursor-pointer">
+                        <option value="">Memuat data ujian...</option>
+                    </select>
+                    
                     <label class="block text-sm font-semibold mb-1">PIN Ujian (Dari Dosen)</label>
-                    <input type="text" id="input-pin" class="w-full border rounded p-2 focus:outline-blue-500 mb-6 font-bold text-center tracking-widest text-lg" placeholder="****">
+                    <input type="text" id="input-pin" class="w-full border rounded p-3 focus:outline-blue-500 mb-6 font-bold text-center tracking-widest text-xl" placeholder="****">
                     <button onclick="mulaiUjian()" class="w-full bg-green-600 text-white px-4 py-3 rounded hover:bg-green-700 font-bold text-lg shadow">Mulai Ujian</button>
                 </div>
             </div>
@@ -117,6 +120,7 @@
     </div>
 
     <script>
+        // ISI URL GAS ANDA DI BAWAH INI
         const API_URL = 'https://script.google.com/macros/s/AKfycbzje9JUcWFNfv1pxa04asMihgfcZ1CJy8hxSFun53t2hZ0HdGpDorsHI9WPc8UJR9cq/exec'; 
 
         let currentUser = null; let currentRole = null; let bankSoal = []; let jawabanMahasiswa = {};
@@ -138,7 +142,7 @@
         function logout() { currentUser = null; currentRole = null; clearInterval(timerInterval); document.getElementById('user-info').classList.add('hidden'); showView('login-view'); }
         
         async function fetchAPI(data) {
-            Swal.showLoading(); try { const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) }); Swal.close(); return await res.json(); } catch (e) { Swal.fire('Error', 'Koneksi gagal', 'error'); return null; }
+            Swal.showLoading(); try { const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) }); Swal.close(); return await res.json(); } catch (e) { Swal.fire('Error', 'Koneksi gagal ke server', 'error'); return null; }
         }
 
         async function handleLoginMhs(e) {
@@ -151,17 +155,24 @@
         }
 
         async function loadActiveExamsForMhs() {
+            const sel = document.getElementById('select-id-set');
+            sel.innerHTML = '<option value="">Sedang mencari ujian aktif...</option>';
+            
             const res = await fetchAPI({ action: 'get_active_exams' });
-            const sel = document.getElementById('select-id-set'); sel.innerHTML = '';
+            sel.innerHTML = ''; // Bersihkan opsi loading
+            
             if (res && res.status === 'success' && res.data.length > 0) {
                 res.data.forEach(id => sel.innerHTML += `<option value="${id}">${id}</option>`);
-            } else { sel.innerHTML = '<option value="">Tidak ada ujian aktif saat ini</option>'; }
+            } else { 
+                sel.innerHTML = '<option value="" disabled selected>Belum ada ujian yang diaktifkan Dosen</option>'; 
+            }
         }
 
         async function mulaiUjian() {
             currentIdSet = document.getElementById('select-id-set').value;
             const pin = document.getElementById('input-pin').value;
-            if (!currentIdSet || !pin) return Swal.fire('Error', 'Pilih ujian dan masukkan PIN', 'warning');
+            if (!currentIdSet) return Swal.fire('Error', 'Tidak ada ujian yang dipilih. Dosen belum mengaktifkan ujian.', 'warning');
+            if (!pin) return Swal.fire('Error', 'Masukkan PIN Ujian', 'warning');
             
             const res = await fetchAPI({ action: 'get_soal_with_pin', id_set: currentIdSet, pin: pin });
             if (res && res.status === 'success') {
@@ -183,7 +194,7 @@
         function renderSoal() {
             const container = document.getElementById('soal-container'); const soal = bankSoal[currentSoalIndex];
             let html = `<h3 class="text-lg font-bold mb-4">Soal No. ${currentSoalIndex + 1}</h3><p class="mb-4">${soal.pertanyaan}</p>`;
-            if (soal.gambar) html += `<img src="${soal.gambar}" class="max-w-full mb-4 border">`;
+            if (soal.gambar) html += `<img src="${soal.gambar}" class="max-w-full mb-4 border rounded shadow-sm">`;
             if (soal.tipe.toLowerCase() === 'pg') {
                 ['A', 'B', 'C', 'D'].forEach(opsi => {
                     if(soal.opsi[opsi]) {
@@ -205,16 +216,17 @@
             }, 1000);
         }
         async function selesaiUjian(isForce = false) {
-            if (!isForce) { const res = await Swal.fire({ title: 'Konfirmasi', text: 'Yakin selesaikan?', icon: 'warning', showCancelButton: true }); if (!res.isConfirmed) return; }
-            clearInterval(timerInterval); await kirimDataUjian(true); localStorage.removeItem(`ujian_${currentUser.nim}_${currentIdSet}`); loadActiveExamsForMhs(); showView('mhs-dashboard-view'); Swal.fire('Berhasil', 'Tersimpan', 'success');
+            if (!isForce) { const res = await Swal.fire({ title: 'Konfirmasi', text: 'Yakin selesaikan ujian? Data final akan dikirim.', icon: 'warning', showCancelButton: true }); if (!res.isConfirmed) return; }
+            clearInterval(timerInterval); await kirimDataUjian(true); localStorage.removeItem(`ujian_${currentUser.nim}_${currentIdSet}`); loadActiveExamsForMhs(); showView('mhs-dashboard-view'); Swal.fire('Berhasil', 'Jawaban ujian telah tersimpan.', 'success');
         }
         function kirimDataUjian(isFinal) { return fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'save_jawaban', nim: currentUser.nim, nama: currentUser.nama, kelas: currentUser.kelas, id_set: currentIdSet, durasi: 3600 - waktuSisa, jawaban_detail: jawabanMahasiswa, is_final: isFinal }) }); }
+        
         function initCheatDetection() {
-            document.addEventListener("visibilitychange", () => { if (document.hidden && currentRole === 'mahasiswa' && !document.getElementById('exam-view').classList.contains('hidden')) fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'log_pelanggaran', nim: currentUser.nim, id_set: currentIdSet, jenis_pelanggaran: 'Pindah Tab', detail: 'Fokus hilang' }) }); });
-            document.addEventListener('paste', (e) => { if (currentRole === 'mahasiswa' && !document.getElementById('exam-view').classList.contains('hidden')) fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'log_pelanggaran', nim: currentUser.nim, id_set: currentIdSet, jenis_pelanggaran: 'Paste Teks', detail: (e.clipboardData || window.clipboardData).getData('text').substring(0,30) }) }); });
+            document.addEventListener("visibilitychange", () => { if (document.hidden && currentRole === 'mahasiswa' && !document.getElementById('exam-view').classList.contains('hidden')) fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'log_pelanggaran', nim: currentUser.nim, id_set: currentIdSet, jenis_pelanggaran: 'Pindah Tab', detail: 'Kehilangan fokus dari layar ujian' }) }); });
+            document.addEventListener('paste', (e) => { if (currentRole === 'mahasiswa' && !document.getElementById('exam-view').classList.contains('hidden')) fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'log_pelanggaran', nim: currentUser.nim, id_set: currentIdSet, jenis_pelanggaran: 'Indikasi Copy-Paste', detail: (e.clipboardData || window.clipboardData).getData('text').substring(0,30) }) }); });
         }
 
-        async function handleLoginDsn(e) { e.preventDefault(); const res = await fetchAPI({ action: 'login_dosen', username: document.getElementById('dsn-user').value, password: document.getElementById('dsn-pass').value }); if (res && res.status === 'success') { currentRole = 'dosen'; document.getElementById('user-info').classList.remove('hidden'); document.getElementById('display-name').innerText = 'Dosen Admin'; showView('dsn-dashboard-view'); loadDashboardDosen(); } else Swal.fire('Gagal', res.message, 'error'); }
+        async function handleLoginDsn(e) { e.preventDefault(); const res = await fetchAPI({ action: 'login_dosen', username: document.getElementById('dsn-user').value, password: document.getElementById('dsn-pass').value }); if (res && res.status === 'success') { currentRole = 'dosen'; document.getElementById('user-info').classList.remove('hidden'); document.getElementById('display-name').innerText = 'Dosen Admin'; showView('dsn-dashboard-view'); loadDashboardDosen(); loadManajemenUjian(); } else Swal.fire('Gagal', res.message, 'error'); }
         async function loadDashboardDosen() { const res = await fetchAPI({ action: 'get_dashboard' }); if (res && res.status === 'success') { masterDataDosen = res.data; populateFilters(); renderTabelDosen(); } }
         function populateFilters() {
             const setU = new Set(), setK = new Set(); masterDataDosen.forEach(d => { if(d.id_set) setU.add(d.id_set); if(d.kelas) setK.add(d.kelas); });
@@ -232,21 +244,21 @@
         }
         async function bukaKoreksi(nim, nama, id_set, nilai, jsonStr) {
             document.getElementById('modal-koreksi').classList.remove('hidden'); document.getElementById('koreksi-info-mhs').innerText = `${nim} - ${nama} (${id_set})`; document.getElementById('input-nilai-baru').value = nilai; selectedKoreksi = { nim, id_set };
-            const konten = document.getElementById('koreksi-konten'); konten.innerHTML = '<p class="text-center mt-10">Memuat...</p>';
+            const konten = document.getElementById('koreksi-konten'); konten.innerHTML = '<p class="text-center mt-10">Memuat detail jawaban dari server...</p>';
             const res = await fetchAPI({ action: 'get_soal_kunci', id_set: id_set });
             if (res && res.status === 'success') {
                 const jwbMhs = JSON.parse(decodeURIComponent(jsonStr)); konten.innerHTML = '';
                 res.data.forEach((s, i) => {
                     let jwb = jwbMhs[i] || '- Kosong -', isPG = s.tipe.toLowerCase() === 'pg';
-                    let ikon = isPG ? (jwb.toString().toUpperCase() === s.kunci.toString().toUpperCase() ? '<span class="text-green-600 font-bold ml-2">✓</span>' : '<span class="text-red-600 font-bold ml-2">✗</span>') : '';
-                    konten.innerHTML += `<div class="border rounded p-4 mb-4 ${isPG ? 'bg-white' : 'bg-yellow-50'}"><p class="font-bold mb-2">Soal ${i + 1}: ${s.pertanyaan}</p><div class="grid grid-cols-2 gap-4 text-sm"><div class="bg-gray-100 p-2 rounded border"><span class="font-semibold block">Jawaban Mhs:</span><span class="${isPG ? 'font-bold' : ''}">${jwb}</span> ${ikon}</div><div class="bg-green-50 p-2 rounded border"><span class="font-semibold text-green-700 block">Kunci:</span><span class="${isPG ? 'font-bold text-green-700' : ''}">${s.kunci || '-'}</span></div></div></div>`;
+                    let ikon = isPG ? (jwb.toString().toUpperCase() === (s.kunci || '').toString().toUpperCase() ? '<span class="text-green-600 font-bold ml-2">✓ Benar</span>' : '<span class="text-red-600 font-bold ml-2">✗ Salah</span>') : '<span class="text-blue-600 font-bold ml-2">(Esai)</span>';
+                    konten.innerHTML += `<div class="border rounded p-4 mb-4 ${isPG ? 'bg-white' : 'bg-yellow-50'} shadow-sm"><p class="font-bold mb-2">Soal ${i + 1}: ${s.pertanyaan}</p><div class="grid grid-cols-2 gap-4 text-sm"><div class="bg-gray-100 p-2 rounded border"><span class="font-semibold block mb-1">Jawaban Mahasiswa:</span><span class="${isPG ? 'font-bold text-lg' : ''}">${jwb}</span> ${ikon}</div><div class="bg-green-50 p-2 rounded border"><span class="font-semibold text-green-700 block mb-1">Kunci / Referensi Dosen:</span><span class="${isPG ? 'font-bold text-lg text-green-700' : ''}">${s.kunci || '-'}</span></div></div></div>`;
                 });
             }
         }
         function tutupKoreksi() { document.getElementById('modal-koreksi').classList.add('hidden'); }
         async function simpanNilaiBaru() {
             const res = await fetchAPI({ action: 'update_nilai', nim: selectedKoreksi.nim, id_set: selectedKoreksi.id_set, nilai_baru: document.getElementById('input-nilai-baru').value });
-            if (res && res.status === 'success') { Swal.fire('Sukses', 'Nilai tersimpan.', 'success'); tutupKoreksi(); loadDashboardDosen(); }
+            if (res && res.status === 'success') { Swal.fire('Sukses', 'Nilai berhasil disimpan.', 'success'); tutupKoreksi(); loadDashboardDosen(); }
         }
 
         async function loadManajemenUjian() {
@@ -255,11 +267,11 @@
                 const tbody = document.getElementById('table-body-manage'); tbody.innerHTML = '';
                 res.data.forEach(row => {
                     tbody.innerHTML += `
-                        <tr class="border-b">
+                        <tr class="border-b hover:bg-gray-50">
                             <td class="p-3 border font-bold">${row.id_set}</td>
-                            <td class="p-3 border text-center"><select id="status-${row.id_set}" class="border rounded p-1 font-bold ${row.status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}"><option value="Aktif" ${row.status === 'Aktif' ? 'selected' : ''}>Aktif</option><option value="Tutup" ${row.status === 'Tutup' ? 'selected' : ''}>Tutup</option></select></td>
-                            <td class="p-3 border text-center"><input type="text" id="pin-${row.id_set}" value="${row.pin}" class="border rounded p-1 text-center w-24 font-bold" placeholder="PIN"></td>
-                            <td class="p-3 border text-center"><button onclick="updateExamStatus('${row.id_set}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded font-bold shadow">Simpan</button></td>
+                            <td class="p-3 border text-center"><select id="status-${row.id_set}" class="border rounded p-2 font-bold ${row.status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}"><option value="Aktif" ${row.status === 'Aktif' ? 'selected' : ''}>Aktif</option><option value="Tutup" ${row.status === 'Tutup' ? 'selected' : ''}>Tutup</option></select></td>
+                            <td class="p-3 border text-center"><input type="text" id="pin-${row.id_set}" value="${row.pin}" class="border rounded p-2 text-center w-32 font-bold tracking-widest" placeholder="PIN"></td>
+                            <td class="p-3 border text-center"><button onclick="updateExamStatus('${row.id_set}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow">Simpan</button></td>
                         </tr>
                     `;
                 });
@@ -268,7 +280,7 @@
         async function updateExamStatus(id) {
             const status = document.getElementById(`status-${id}`).value, pin = document.getElementById(`pin-${id}`).value;
             const res = await fetchAPI({ action: 'update_exam_status', id_set: id, status: status, pin: pin });
-            if (res && res.status === 'success') Swal.fire('Sukses', 'Status diperbarui', 'success');
+            if (res && res.status === 'success') Swal.fire('Sukses', `Status ujian ${id} berhasil diperbarui.`, 'success');
         }
     </script>
 </body>
