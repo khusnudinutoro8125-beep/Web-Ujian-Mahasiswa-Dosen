@@ -10,12 +10,12 @@
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
         .hidden { display: none !important; }
+        .modal-bg { background-color: rgba(0,0,0,0.5); }
     </style>
 </head>
 <body class="text-gray-800">
 
     <div id="app" class="min-h-screen flex flex-col">
-
         <header class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center">
             <h1 class="text-xl font-bold">Portal Ujian</h1>
             <div id="user-info" class="hidden">
@@ -24,14 +24,13 @@
             </div>
         </header>
 
-        <main class="flex-grow flex items-center justify-center p-4">
+        <main class="flex-grow flex items-start justify-center p-4">
             
-            <div id="login-view" class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+            <div id="login-view" class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md mt-10">
                 <div class="flex border-b mb-6">
                     <button id="btn-tab-mhs" onclick="switchLoginTab('mhs')" class="w-1/2 py-2 border-b-2 border-blue-600 font-bold text-blue-600">Mahasiswa</button>
                     <button id="btn-tab-dsn" onclick="switchLoginTab('dsn')" class="w-1/2 py-2 text-gray-500 font-semibold hover:text-blue-500">Dosen</button>
                 </div>
-
                 <form id="form-mhs" onsubmit="handleLoginMhs(event)">
                     <div class="mb-4">
                         <label class="block text-sm font-semibold mb-1">NIM</label>
@@ -51,7 +50,6 @@
                     </div>
                     <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700">Masuk / Daftar</button>
                 </form>
-
                 <form id="form-dsn" class="hidden" onsubmit="handleLoginDsn(event)">
                     <div class="mb-4">
                         <label class="block text-sm font-semibold mb-1">Username Dosen</label>
@@ -65,7 +63,7 @@
                 </form>
             </div>
 
-            <div id="mhs-dashboard-view" class="hidden bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
+            <div id="mhs-dashboard-view" class="hidden bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl mt-10">
                 <h2 class="text-2xl font-bold mb-6 border-b pb-2">Daftar Ujian Tersedia</h2>
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-1">Masukkan ID Set Soal (Dari Dosen)</label>
@@ -74,21 +72,18 @@
                 </div>
             </div>
 
-            <div id="exam-view" class="hidden w-full max-w-4xl flex flex-col md:flex-row gap-4">
+            <div id="exam-view" class="hidden w-full max-w-5xl flex flex-col md:flex-row gap-4">
                 <div class="w-full md:w-1/4 bg-white p-4 rounded-lg shadow h-max">
                     <div class="text-center mb-4">
                         <p class="text-sm text-gray-500">Sisa Waktu</p>
                         <p id="timer-display" class="text-2xl font-bold text-red-600">00:00:00</p>
                     </div>
-                    <div id="soal-nav" class="grid grid-cols-4 gap-2 mb-4">
-                        </div>
+                    <div id="soal-nav" class="grid grid-cols-4 gap-2 mb-4"></div>
                     <button onclick="selesaiUjian()" class="w-full bg-red-600 text-white py-2 rounded font-bold hover:bg-red-700">Selesaikan Ujian</button>
-                    <p id="save-status" class="text-xs text-center text-gray-400 mt-2">Tersimpan di perangkat lokal</p>
+                    <p id="save-status" class="text-xs text-center text-gray-400 mt-2">Tersimpan lokal</p>
                 </div>
-
                 <div class="w-full md:w-3/4 bg-white p-6 rounded-lg shadow">
-                    <div id="soal-container">
-                        </div>
+                    <div id="soal-container"></div>
                     <div class="flex justify-between mt-6 border-t pt-4">
                         <button onclick="prevSoal()" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Sebelumnya</button>
                         <button onclick="nextSoal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Selanjutnya</button>
@@ -96,26 +91,43 @@
                 </div>
             </div>
 
-            <div id="dsn-dashboard-view" class="hidden w-full max-w-6xl bg-white p-6 rounded-lg shadow-lg">
-                <div class="flex justify-between items-center mb-6 border-b pb-2">
-                    <h2 class="text-2xl font-bold">Monitoring Real-Time</h2>
-                    <button onclick="loadDashboardDosen()" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">Refresh Data</button>
+            <div id="dsn-dashboard-view" class="hidden w-full max-w-7xl bg-white p-6 rounded-lg shadow-lg">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h2 class="text-2xl font-bold">Dashboard Dosen</h2>
+                    <button onclick="loadDashboardDosen()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold shadow">Refresh Data</button>
                 </div>
+                
+                <div class="flex gap-4 mb-6 bg-gray-50 p-4 rounded border">
+                    <div class="w-1/3">
+                        <label class="block text-sm font-semibold mb-1">Filter ID Ujian</label>
+                        <select id="filter-ujian" onchange="renderTabelDosen()" class="w-full border rounded p-2">
+                            <option value="SEMUA">Semua Ujian</option>
+                        </select>
+                    </div>
+                    <div class="w-1/3">
+                        <label class="block text-sm font-semibold mb-1">Filter Kelas</label>
+                        <select id="filter-kelas" onchange="renderTabelDosen()" class="w-full border rounded p-2">
+                            <option value="SEMUA">Semua Kelas</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-gray-100 border-b">
-                                <th class="p-2">Waktu Terakhir</th>
-                                <th class="p-2">NIM</th>
-                                <th class="p-2">Nama</th>
-                                <th class="p-2">Kelas</th>
-                                <th class="p-2">ID Set</th>
-                                <th class="p-2">Status</th>
-                                <th class="p-2">Pelanggaran</th>
+                            <tr class="bg-gray-800 text-white">
+                                <th class="p-3 border">Waktu</th>
+                                <th class="p-3 border">NIM</th>
+                                <th class="p-3 border">Nama</th>
+                                <th class="p-3 border">Kls</th>
+                                <th class="p-3 border">Ujian</th>
+                                <th class="p-3 border">Status</th>
+                                <th class="p-3 border text-center">Nilai</th>
+                                <th class="p-3 border text-center">Aksi</th>
+                                <th class="p-3 border w-1/4">Pelanggaran</th>
                             </tr>
                         </thead>
-                        <tbody id="table-body-dosen" class="text-sm">
-                            </tbody>
+                        <tbody id="table-body-dosen" class="text-sm"></tbody>
                     </table>
                 </div>
             </div>
@@ -123,11 +135,33 @@
         </main>
     </div>
 
-    <script>
-        // GANTI URL DI BAWAH INI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwYX-5Iaz9XVI7Pc1NxDRBLRnZM7IxZT5X_V-_99j8vmyi9n439Zs_hmJzxMvvV3qGq/exec'; 
+    <div id="modal-koreksi" class="fixed inset-0 modal-bg flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-lg">
+                <h3 class="text-xl font-bold">Koreksi Jawaban Mahasiswa</h3>
+                <button onclick="tutupKoreksi()" class="text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
+            </div>
+            
+            <div class="p-4 border-b flex items-center justify-between bg-blue-50">
+                <div id="koreksi-info-mhs" class="font-semibold text-blue-900">NIM - Nama</div>
+                <div class="flex items-center gap-2">
+                    <label class="font-bold text-sm">Nilai Akhir (0-100):</label>
+                    <input type="number" id="input-nilai-baru" class="w-20 border border-gray-400 rounded p-1 text-center font-bold text-lg">
+                    <button onclick="simpanNilaiBaru()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded font-bold shadow">Simpan Nilai</button>
+                </div>
+            </div>
 
-        // State Management
+            <div id="koreksi-konten" class="p-4 overflow-y-auto flex-grow space-y-4">
+                <p class="text-center text-gray-500 mt-10">Memuat data...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ISI URL GAS ANDA DI BAWAH INI
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzWt1lENwiSMxdt_UW5AKnSx9TiOPrKCU63tt5cdMRWpZ8dFHt-zPuSzxWxf1UpZ1tw/exec'; 
+
+        // State variables
         let currentUser = null;
         let currentRole = null;
         let bankSoal = [];
@@ -136,9 +170,11 @@
         let timerInterval = null;
         let currentIdSet = '';
         let waktuSisa = 0;
-        let pollingInterval = null;
+        
+        // Dosen State
+        let masterDataDosen = [];
+        let selectedKoreksi = { nim: '', id_set: '' };
 
-        // --- FUNGSI UI / NAVIGASI VIEW ---
         function showView(viewId) {
             ['login-view', 'mhs-dashboard-view', 'exam-view', 'dsn-dashboard-view'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
@@ -165,28 +201,18 @@
             }
         }
 
-        function setHeaderUser(name) {
-            document.getElementById('user-info').classList.remove('hidden');
-            document.getElementById('display-name').innerText = name;
-        }
-
         function logout() {
             currentUser = null;
             currentRole = null;
             clearInterval(timerInterval);
-            clearInterval(pollingInterval);
             document.getElementById('user-info').classList.add('hidden');
             showView('login-view');
         }
 
-        // --- FUNGSI API CALLS ---
         async function fetchAPI(data) {
             try {
                 Swal.showLoading();
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(data)
-                });
+                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
                 const result = await response.json();
                 Swal.close();
                 return result;
@@ -196,7 +222,7 @@
             }
         }
 
-        // --- LOGIN & REGISTRASI ---
+        // --- MAHASISWA LOGIC ---
         async function handleLoginMhs(e) {
             e.preventDefault();
             const data = {
@@ -206,78 +232,42 @@
                 password: document.getElementById('mhs-pass').value,
                 isNewRegister: document.getElementById('mhs-new').checked
             };
-
             const res = await fetchAPI(data);
             if (res && res.status === 'success') {
                 currentUser = res.data;
                 currentRole = 'mahasiswa';
-                setHeaderUser(currentUser.nama);
+                document.getElementById('user-info').classList.remove('hidden');
+                document.getElementById('display-name').innerText = currentUser.nama;
                 showView('mhs-dashboard-view');
-                Swal.fire('Sukses', res.message, 'success');
-            } else if (res) {
-                Swal.fire('Gagal', res.message, 'error');
-            }
+            } else if (res) Swal.fire('Gagal', res.message, 'error');
         }
 
-        async function handleLoginDsn(e) {
-            e.preventDefault();
-            const data = {
-                action: 'login_dosen',
-                username: document.getElementById('dsn-user').value,
-                password: document.getElementById('dsn-pass').value
-            };
-
-            const res = await fetchAPI(data);
-            if (res && res.status === 'success') {
-                currentRole = 'dosen';
-                setHeaderUser('Dosen');
-                showView('dsn-dashboard-view');
-                loadDashboardDosen();
-                // Polling data tiap 10 detik
-                pollingInterval = setInterval(loadDashboardDosen, 10000); 
-            } else if (res) {
-                Swal.fire('Gagal', res.message, 'error');
-            }
-        }
-
-        // --- LOGIKA UJIAN ---
         async function mulaiUjian() {
             currentIdSet = document.getElementById('input-id-set').value;
-            if (!currentIdSet) return Swal.fire('Error', 'Masukkan ID Set Soal', 'warning');
-
+            if (!currentIdSet) return Swal.fire('Error', 'Masukkan ID', 'warning');
             const res = await fetchAPI({ action: 'get_soal', id_set: currentIdSet });
             if (res && res.status === 'success') {
                 bankSoal = res.data;
-                
-                // Cek local storage untuk autosave sebelumnya
                 const savedData = localStorage.getItem(`ujian_${currentUser.nim}_${currentIdSet}`);
-                if (savedData) {
-                    jawabanMahasiswa = JSON.parse(savedData);
-                } else {
-                    jawabanMahasiswa = {};
-                }
-
+                jawabanMahasiswa = savedData ? JSON.parse(savedData) : {};
                 currentSoalIndex = 0;
-                // Set default waktu (bisa dinamis dari server nantinya, ini fix 60 mnt sbg contoh)
-                waktuSisa = 60 * 60; 
+                waktuSisa = 3600; // 60 menit default
                 startTimer();
                 renderNavSoal();
                 renderSoal();
                 showView('exam-view');
                 initCheatDetection();
-            } else if (res) {
-                Swal.fire('Gagal', res.message, 'error');
-            }
+            } else if (res) Swal.fire('Gagal', res.message, 'error');
         }
 
         function renderNavSoal() {
             const nav = document.getElementById('soal-nav');
             nav.innerHTML = '';
-            bankSoal.forEach((_, index) => {
+            bankSoal.forEach((_, i) => {
                 const btn = document.createElement('button');
-                btn.innerText = index + 1;
-                btn.className = `p-2 rounded font-bold border ${jawabanMahasiswa[index] ? 'bg-green-500 text-white border-green-600' : 'bg-gray-100 text-gray-700 border-gray-300'}`;
-                btn.onclick = () => { currentSoalIndex = index; renderSoal(); };
+                btn.innerText = i + 1;
+                btn.className = `p-2 rounded font-bold border ${jawabanMahasiswa[i] ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700'} ${i === currentSoalIndex ? 'ring-2 ring-blue-600' : ''}`;
+                btn.onclick = () => { currentSoalIndex = i; renderSoal(); renderNavSoal(); };
                 nav.appendChild(btn);
             });
         }
@@ -285,175 +275,225 @@
         function renderSoal() {
             const container = document.getElementById('soal-container');
             const soal = bankSoal[currentSoalIndex];
-            
-            let html = `<h3 class="text-lg font-bold mb-4">Soal No. ${currentSoalIndex + 1}</h3>`;
-            html += `<p class="mb-4">${soal.pertanyaan}</p>`;
-            
-            if (soal.gambar) {
-                html += `<img src="${soal.gambar}" class="max-w-full h-auto mb-4 rounded border">`;
-            }
+            let html = `<h3 class="text-lg font-bold mb-4">Soal No. ${currentSoalIndex + 1}</h3><p class="mb-4">${soal.pertanyaan}</p>`;
+            if (soal.gambar) html += `<img src="${soal.gambar}" class="max-w-full mb-4 border">`;
 
             if (soal.tipe.toLowerCase() === 'pg') {
                 ['A', 'B', 'C', 'D'].forEach(opsi => {
                     if(soal.opsi[opsi]) {
                         const isChecked = jawabanMahasiswa[currentSoalIndex] === opsi ? 'checked' : '';
-                        html += `
-                        <label class="block mb-2 p-3 border rounded cursor-pointer hover:bg-gray-50 ${isChecked ? 'bg-blue-50 border-blue-500' : ''}">
-                            <input type="radio" name="opsi" value="${opsi}" onchange="simpanJawaban('${opsi}')" class="mr-2" ${isChecked}>
-                            ${opsi}. ${soal.opsi[opsi]}
-                        </label>`;
+                        html += `<label class="block mb-2 p-3 border rounded cursor-pointer hover:bg-gray-50 ${isChecked ? 'bg-blue-50 border-blue-500' : ''}">
+                                    <input type="radio" name="opsi" value="${opsi}" onchange="simpanJawaban('${opsi}')" class="mr-2" ${isChecked}>
+                                    ${opsi}. ${soal.opsi[opsi]}
+                                 </label>`;
                     }
                 });
             } else {
-                const nilaiEsai = jawabanMahasiswa[currentSoalIndex] || '';
-                html += `<textarea oninput="simpanJawaban(this.value)" rows="5" class="w-full border rounded p-2 focus:outline-blue-500" placeholder="Ketik jawaban di sini...">${nilaiEsai}</textarea>`;
+                html += `<textarea oninput="simpanJawaban(this.value)" rows="5" class="w-full border rounded p-2 focus:outline-blue-500">${jawabanMahasiswa[currentSoalIndex] || ''}</textarea>`;
             }
-
             container.innerHTML = html;
         }
 
-        function simpanJawaban(nilai) {
-            jawabanMahasiswa[currentSoalIndex] = nilai;
-            // Autosave ke Local Storage (Eksekusi 0 latency)
+        function simpanJawaban(val) {
+            jawabanMahasiswa[currentSoalIndex] = val;
             localStorage.setItem(`ujian_${currentUser.nim}_${currentIdSet}`, JSON.stringify(jawabanMahasiswa));
-            
-            document.getElementById('save-status').innerText = `Autosave lokal: ${new Date().toLocaleTimeString()}`;
-            renderNavSoal(); // Update warna tombol navigasi
+            document.getElementById('save-status').innerText = `Autosave: ${new Date().toLocaleTimeString()}`;
+            renderNavSoal();
         }
 
-        function nextSoal() {
-            if (currentSoalIndex < bankSoal.length - 1) {
-                currentSoalIndex++;
-                renderSoal();
-            }
-        }
+        function nextSoal() { if (currentSoalIndex < bankSoal.length - 1) { currentSoalIndex++; renderSoal(); renderNavSoal(); } }
+        function prevSoal() { if (currentSoalIndex > 0) { currentSoalIndex--; renderSoal(); renderNavSoal(); } }
 
-        function prevSoal() {
-            if (currentSoalIndex > 0) {
-                currentSoalIndex--;
-                renderSoal();
-            }
-        }
-
-        // --- SISTEM WAKTU & SUBMIT ---
         function startTimer() {
             timerInterval = setInterval(() => {
-                if (waktuSisa <= 0) {
-                    clearInterval(timerInterval);
-                    selesaiUjian(true); // Force submit
-                    return;
-                }
+                if (waktuSisa <= 0) { clearInterval(timerInterval); selesaiUjian(true); return; }
                 waktuSisa--;
                 const h = Math.floor(waktuSisa / 3600).toString().padStart(2, '0');
                 const m = Math.floor((waktuSisa % 3600) / 60).toString().padStart(2, '0');
                 const s = (waktuSisa % 60).toString().padStart(2, '0');
                 document.getElementById('timer-display').innerText = `${h}:${m}:${s}`;
-                
-                // Sync data ke backend tiap 30 detik agar jika browser crash, dosen bisa lihat progres
-                if (waktuSisa % 30 === 0) {
-                    kirimDataUjian(false);
-                }
+                if (waktuSisa % 60 === 0) kirimDataUjian(false);
             }, 1000);
         }
 
         async function selesaiUjian(isForce = false) {
-            const confirmMsg = isForce ? 'Waktu habis! Jawaban disubmit otomatis.' : 'Yakin ingin menyelesaikan ujian? Data tidak bisa diubah lagi.';
-            
             if (!isForce) {
-                const result = await Swal.fire({
-                    title: 'Konfirmasi', text: confirmMsg, icon: 'warning',
-                    showCancelButton: true, confirmButtonText: 'Ya, Selesai'
-                });
-                if (!result.isConfirmed) return;
-            } else {
-                Swal.fire('Info', confirmMsg, 'info');
+                const res = await Swal.fire({ title: 'Konfirmasi', text: 'Yakin selesaikan ujian?', icon: 'warning', showCancelButton: true });
+                if (!res.isConfirmed) return;
             }
-
             clearInterval(timerInterval);
             await kirimDataUjian(true);
-            
-            // Hapus session local setelah selesai
             localStorage.removeItem(`ujian_${currentUser.nim}_${currentIdSet}`);
             showView('mhs-dashboard-view');
+            Swal.fire('Berhasil', 'Jawaban final tersimpan.', 'success');
         }
 
         function kirimDataUjian(isFinal) {
-            const durasiPengerjaan = 3600 - waktuSisa; // Asumsi total 3600 dt
-            return fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: 'save_jawaban',
-                    nim: currentUser.nim,
-                    nama: currentUser.nama,
-                    kelas: currentUser.kelas,
-                    id_set: currentIdSet,
-                    durasi: durasiPengerjaan,
-                    nilai: 0, // Dihitung di backend atau dosen manual
-                    jawaban_detail: jawabanMahasiswa,
-                    is_final: isFinal
-                })
-            });
+            return fetch(API_URL, { method: 'POST', body: JSON.stringify({
+                action: 'save_jawaban', nim: currentUser.nim, nama: currentUser.nama, kelas: currentUser.kelas, id_set: currentIdSet, durasi: 3600 - waktuSisa, jawaban_detail: jawabanMahasiswa, is_final: isFinal
+            })});
         }
 
-        // --- SISTEM ANTI KECURANGAN ---
         function initCheatDetection() {
-            // Deteksi Pindah Tab / Layar Mati
             document.addEventListener("visibilitychange", () => {
                 if (document.hidden && currentRole === 'mahasiswa' && !document.getElementById('exam-view').classList.contains('hidden')) {
-                    kirimLogPelanggaran('Pindah Tab/Aplikasi', 'Kehilangan fokus dari layar ujian');
+                    fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'log_pelanggaran', nim: currentUser.nim, id_set: currentIdSet, jenis_pelanggaran: 'Pindah Tab', detail: 'Fokus hilang' }) });
                 }
             });
-
-            // Deteksi Copy Paste (Paste teks Anthropic dll)
             document.addEventListener('paste', (e) => {
                 if (currentRole === 'mahasiswa' && !document.getElementById('exam-view').classList.contains('hidden')) {
-                    const pasteData = (e.clipboardData || window.clipboardData).getData('text');
-                    kirimLogPelanggaran('Indikasi Copy-Paste', `Menempel teks: ${pasteData.substring(0, 50)}...`);
+                    const text = (e.clipboardData || window.clipboardData).getData('text');
+                    fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'log_pelanggaran', nim: currentUser.nim, id_set: currentIdSet, jenis_pelanggaran: 'Paste Teks', detail: text.substring(0,30) }) });
                 }
             });
         }
 
-        function kirimLogPelanggaran(jenis, detail) {
-            // Menggunakan beacon atau fetch fire-and-forget agar tidak mengganggu ujian
-            fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: 'log_pelanggaran',
-                    nim: currentUser.nim,
-                    id_set: currentIdSet,
-                    jenis_pelanggaran: jenis,
-                    detail: detail
-                })
-            }).catch(e => console.error(e));
+        // --- DOSEN LOGIC ---
+        async function handleLoginDsn(e) {
+            e.preventDefault();
+            const res = await fetchAPI({ action: 'login_dosen', username: document.getElementById('dsn-user').value, password: document.getElementById('dsn-pass').value });
+            if (res && res.status === 'success') {
+                currentRole = 'dosen';
+                document.getElementById('user-info').classList.remove('hidden');
+                document.getElementById('display-name').innerText = 'Dosen Admin';
+                showView('dsn-dashboard-view');
+                loadDashboardDosen();
+            } else if (res) Swal.fire('Gagal', res.message, 'error');
         }
 
-        // --- DASHBOARD DOSEN ---
         async function loadDashboardDosen() {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'get_dashboard' })
-            });
-            const res = await response.json();
-            
+            const res = await fetchAPI({ action: 'get_dashboard' });
             if (res && res.status === 'success') {
-                const tbody = document.getElementById('table-body-dosen');
-                tbody.innerHTML = '';
-                res.data.forEach(row => {
-                    const rowHtml = `
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="p-2">${row.timestamp}</td>
-                            <td class="p-2 font-bold">${row.nim}</td>
-                            <td class="p-2">${row.nama}</td>
-                            <td class="p-2">${row.kelas}</td>
-                            <td class="p-2 text-center">${row.id_set}</td>
-                            <td class="p-2">
-                                <span class="px-2 py-1 rounded text-xs text-white ${row.status === 'Selesai' ? 'bg-green-500' : 'bg-yellow-500'}">${row.status}</span>
-                            </td>
-                            <td class="p-2 text-red-600 text-xs whitespace-pre-wrap">${row.pelanggaran || '-'}</td>
-                        </tr>
+                masterDataDosen = res.data;
+                populateFilters();
+                renderTabelDosen();
+            }
+        }
+
+        function populateFilters() {
+            const setUjian = new Set();
+            const setKelas = new Set();
+            masterDataDosen.forEach(d => { if(d.id_set) setUjian.add(d.id_set); if(d.kelas) setKelas.add(d.kelas); });
+
+            const elUjian = document.getElementById('filter-ujian');
+            const elKelas = document.getElementById('filter-kelas');
+            
+            // Simpan pilihan filter saat ini agar tidak tereset jika refresh
+            const valUjian = elUjian.value;
+            const valKelas = elKelas.value;
+
+            elUjian.innerHTML = '<option value="SEMUA">Semua Ujian</option>';
+            elKelas.innerHTML = '<option value="SEMUA">Semua Kelas</option>';
+
+            setUjian.forEach(u => elUjian.innerHTML += `<option value="${u}">${u}</option>`);
+            setKelas.forEach(k => elKelas.innerHTML += `<option value="${k}">${k}</option>`);
+
+            if([...setUjian].includes(valUjian)) elUjian.value = valUjian;
+            if([...setKelas].includes(valKelas)) elKelas.value = valKelas;
+        }
+
+        function renderTabelDosen() {
+            const fUjian = document.getElementById('filter-ujian').value;
+            const fKelas = document.getElementById('filter-kelas').value;
+            const tbody = document.getElementById('table-body-dosen');
+            tbody.innerHTML = '';
+
+            masterDataDosen.forEach(row => {
+                if (fUjian !== 'SEMUA' && row.id_set !== fUjian) return;
+                if (fKelas !== 'SEMUA' && row.kelas !== fKelas) return;
+
+                // Format string JSON menjadi objek untuk mengecek apakah sudah ada isinya
+                let jawabanObj = {};
+                try { jawabanObj = JSON.parse(row.jawaban_detail); } catch(e){}
+                const jsonJawabanStr = encodeURIComponent(row.jawaban_detail || '{}');
+
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3 border">${row.timestamp}</td>
+                        <td class="p-3 border font-bold">${row.nim}</td>
+                        <td class="p-3 border">${row.nama}</td>
+                        <td class="p-3 border">${row.kelas}</td>
+                        <td class="p-3 border text-center font-semibold text-blue-600">${row.id_set}</td>
+                        <td class="p-3 border"><span class="px-2 py-1 rounded text-xs text-white ${row.status === 'Selesai' ? 'bg-green-500' : 'bg-yellow-500'}">${row.status}</span></td>
+                        <td class="p-3 border text-center font-bold text-lg">${row.nilai}</td>
+                        <td class="p-3 border text-center">
+                            <button onclick="bukaKoreksi('${row.nim}', '${row.nama}', '${row.id_set}', '${row.nilai}', '${jsonJawabanStr}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm shadow">Periksa</button>
+                        </td>
+                        <td class="p-3 border text-red-600 text-xs whitespace-pre-wrap">${row.pelanggaran || '-'}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function bukaKoreksi(nim, nama, id_set, nilai_saat_ini, jsonJawabanUri) {
+            document.getElementById('modal-koreksi').classList.remove('hidden');
+            document.getElementById('koreksi-info-mhs').innerText = `${nim} - ${nama} (${id_set})`;
+            document.getElementById('input-nilai-baru').value = nilai_saat_ini;
+            selectedKoreksi = { nim, id_set };
+            
+            const konten = document.getElementById('koreksi-konten');
+            konten.innerHTML = '<p class="text-center text-gray-500 mt-10">Mengambil soal dan kunci jawaban dari server...</p>';
+
+            const res = await fetchAPI({ action: 'get_soal_kunci', id_set: id_set });
+            if (res && res.status === 'success') {
+                const soalKunci = res.data;
+                const jawabanMhs = JSON.parse(decodeURIComponent(jsonJawabanUri));
+                konten.innerHTML = '';
+
+                soalKunci.forEach((soal, index) => {
+                    let jwbMhs = jawabanMhs[index] || '- Kosong -';
+                    let statusIkon = '';
+                    let isPG = soal.tipe.toLowerCase() === 'pg';
+
+                    if (isPG) {
+                        if (jwbMhs.toString().toUpperCase() === soal.kunci.toString().toUpperCase()) {
+                            statusIkon = '<span class="text-green-600 font-bold ml-2">✓ Benar</span>';
+                        } else {
+                            statusIkon = '<span class="text-red-600 font-bold ml-2">✗ Salah</span>';
+                        }
+                    } else {
+                        statusIkon = '<span class="text-blue-600 font-bold ml-2">(Esai - Penilaian Manual)</span>';
+                    }
+
+                    konten.innerHTML += `
+                        <div class="border rounded p-4 ${isPG ? 'bg-white' : 'bg-yellow-50'} shadow-sm">
+                            <p class="font-bold text-gray-700 mb-2">Soal ${index + 1}: ${soal.pertanyaan}</p>
+                            <div class="grid grid-cols-2 gap-4 mt-2 text-sm">
+                                <div class="bg-gray-100 p-2 rounded border">
+                                    <span class="font-semibold text-gray-600 block mb-1">Jawaban Mahasiswa:</span>
+                                    <span class="${isPG ? 'font-bold text-lg' : ''}">${jwbMhs}</span> ${statusIkon}
+                                </div>
+                                <div class="bg-green-50 p-2 rounded border border-green-200">
+                                    <span class="font-semibold text-green-700 block mb-1">Kunci Jawaban / Referensi:</span>
+                                    <span class="${isPG ? 'font-bold text-lg text-green-700' : ''}">${soal.kunci || '- Tidak ada -'}</span>
+                                </div>
+                            </div>
+                        </div>
                     `;
-                    tbody.innerHTML += rowHtml;
                 });
+            } else {
+                konten.innerHTML = '<p class="text-red-500 text-center">Gagal memuat detail soal.</p>';
+            }
+        }
+
+        function tutupKoreksi() {
+            document.getElementById('modal-koreksi').classList.add('hidden');
+        }
+
+        async function simpanNilaiBaru() {
+            const nilaiBaru = document.getElementById('input-nilai-baru').value;
+            const res = await fetchAPI({
+                action: 'update_nilai',
+                nim: selectedKoreksi.nim,
+                id_set: selectedKoreksi.id_set,
+                nilai_baru: nilaiBaru
+            });
+            if (res && res.status === 'success') {
+                Swal.fire('Sukses', 'Nilai berhasil disimpan.', 'success');
+                tutupKoreksi();
+                loadDashboardDosen(); // Reload tabel agar nilai baru muncul
+            } else {
+                Swal.fire('Gagal', 'Tidak dapat menyimpan nilai', 'error');
             }
         }
     </script>
